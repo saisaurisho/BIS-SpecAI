@@ -50,3 +50,57 @@ export async function fetchStandards(): Promise<StandardMetadata[]> {
   }
   return res.json();
 }
+
+export async function verifyStandardOnPortal(
+  isNumber: string,
+  year?: number,
+  title?: string
+): Promise<import("@/types").StandardVerificationResult> {
+  const res = await fetch(`${API_BASE}/agent/verify-standard`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ is_number: isNumber, year, title }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Verification failed" }));
+    throw new Error(err.detail || `Server error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+export async function discoverStandardsOnPortal(
+  query: string,
+  limit: number = 8
+): Promise<import("@/types").DiscoverStandardsResponse> {
+  const res = await fetch(`${API_BASE}/agent/discover-standards`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, limit }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Standard discovery failed" }));
+    throw new Error(err.detail || `Server error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+export async function exportStandardPdf(
+  standard: StandardMetadata,
+  tenderClause?: string
+): Promise<Blob> {
+  const res = await fetch(`${API_BASE}/export-standard-pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ standard, tender_clause: tenderClause }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to generate PDF (HTTP ${res.status})`);
+  }
+
+  return res.blob();
+}

@@ -193,3 +193,45 @@ export interface ExampleScenario {
   notes: string;
 }
 
+export interface StandardVerificationResult {
+  is_number: string;
+  status: "ACTIVE_CURRENT" | "SUPERSEDED" | "WITHDRAWN" | "UNDER_REVISION" | string;
+  status_label: string;
+  latest_edition: string;
+  published_year?: string | null;
+  reaffirmed_year?: string | null;
+  superseded_by?: string | null;
+  verified_via: string;
+  portal_url: string;
+  is_valid_for_procurement: boolean;
+  revisions_history: Array<{
+    id?: string;
+    label?: string;
+    year?: string;
+    reaffirm_year?: string;
+  }>;
+  amendments_count: number;
+  verification_timestamp: string;
+  agent_summary: string;
+  linked_normative_standards: string[];
+}
+
+export interface DiscoveredStandard {
+  is_number: string;
+  title: string;
+  year?: string | null;
+  status: string;
+  portal_url: string;
+  is_in_local_catalog: boolean;
+  relevance_note?: string | null;
+}
+
+export interface DiscoverStandardsResponse {
+  query: string;
+  discovered_standards: DiscoveredStandard[];
+  total_found_on_portal: number;
+  agent_analysis: string;
+  portal_source: string;
+  execution_time_ms: number;
+}
+

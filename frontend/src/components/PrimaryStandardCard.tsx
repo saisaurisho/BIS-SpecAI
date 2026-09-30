@@ -7,17 +7,13 @@ import {
   AlertTriangle,
   Network,
   Calendar,
-  ChevronDown,
-  ChevronUp,
   Sparkles,
-  ShieldCheck,
-  FileText,
-  Copy,
-  Info,
-  Layers,
-  FileCheck
+  Download,
+  FileCheck2,
 } from "lucide-react";
 import { StandardMetadata } from "@/types";
+import { LiveVerificationBadge } from "./LiveVerificationBadge";
+import { exportStandardPdf } from "@/lib/api";
 
 interface Props {
   standard: StandardMetadata;
@@ -25,88 +21,94 @@ interface Props {
   onOpenGraph: () => void;
   onViewStandard: (std: StandardMetadata) => void;
   onOpenClause?: () => void;
+  tenderClause?: string;
 }
 
 export const PrimaryStandardCard: React.FC<Props> = ({
   standard,
-  semanticNote,
   onOpenGraph,
-  onViewStandard,
-  onOpenClause,
+  tenderClause,
 }) => {
-  const [showEvidence, setShowEvidence] = useState(false);
-  const [showAmendments, setShowAmendments] = useState(false);
-  const [showTechnicalScores, setShowTechnicalScores] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const score = standard.ai_relevance_score || 85;
 
   // Distinguish lifecycle states accurately
   const isCurrent = standard.status === "current";
   const isSuperseded = standard.status === "superseded" || Boolean(standard.superseded_by);
-  const hasAmendments = Boolean(standard.amendments && standard.amendments.length > 0);
 
-  // Score bar styling
-  const barColor =
-    score >= 85
-      ? "bg-emerald-600"
-      : score >= 70
-      ? "bg-blue-600"
-      : "bg-amber-500";
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    try {
+      const blob = await exportStandardPdf(standard, tenderClause);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const cleanNum = standard.is_number.replace(/[^a-zA-Z0-9_\-]/g, "_");
+      a.download = `BIS_Specification_${cleanNum}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      alert("Failed to export PDF: " + err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
-    <div className="bg-white rounded-xl shadow-xs border-2 border-blue-600/30 p-5 md:p-6 transition-all hover:border-blue-600/50 space-y-4">
-      {/* 1. Header: Primary Badge + Lifecycle Badge + Quick Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold bg-blue-700 text-white shadow-2xs">
-            <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+    <div className="bg-white rounded-xl shadow-xs border-2 border-blue-600/30 p-5 md:p-7 transition-all hover:border-blue-600/50 space-y-5">
+      {/* 1. Header: Primary Badge + Lifecycle Badge + Relevance at top + Quick Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-3.5 border-b border-slate-100">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold bg-blue-700 text-white shadow-2xs">
+            <Star className="w-4 h-4 fill-amber-300 text-amber-300" />
             PRIMARY APPLICABLE STANDARD
           </span>
 
-          {/* Lifecycle Status: Current vs Superseded vs Amended */}
+          {/* Relevance at the top */}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-bold bg-purple-50 text-purple-800 border border-purple-300">
+            <Sparkles className="w-4 h-4 text-purple-600" />
+            {score}% AI Relevance
+          </span>
+
+          {/* Lifecycle Status: Current vs Superseded */}
           {isCurrent ? (
-            <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-300">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <span className="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               Current / Active Edition
             </span>
           ) : isSuperseded ? (
-            <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-md bg-red-50 text-red-800 border border-red-300">
-              <AlertTriangle className="w-3 h-3 text-red-600" />
+            <span className="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1 rounded-lg bg-red-50 text-red-800 border border-red-300">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
               ⚠ Superseded Standard
             </span>
           ) : (
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-300">
+            <span className="text-sm font-semibold px-3 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-300">
               {standard.status}
-            </span>
-          )}
-
-          {hasAmendments && (
-            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">
-              <FileCheck className="w-3 h-3 text-blue-600" />
-              {standard.amendments?.length} Active Amendment{standard.amendments?.length === 1 ? "" : "s"}
             </span>
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
-          {onOpenClause && (
-            <button
-              type="button"
-              onClick={onOpenClause}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg shadow-2xs transition"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span>Copy to Tender</span>
-            </button>
-          )}
+        {/* Action Buttons: Export as PDF + Relationship Graph */}
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            disabled={isExporting}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg shadow-2xs transition disabled:opacity-50 cursor-pointer"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isExporting ? "Generating PDF..." : "Export as PDF"}</span>
+          </button>
 
           <button
             type="button"
             onClick={onOpenGraph}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg shadow-2xs transition"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg shadow-2xs transition cursor-pointer"
           >
-            <Network className="w-3.5 h-3.5 text-blue-700" />
+            <Network className="w-4 h-4 text-blue-700" />
             <span>Relationship Graph</span>
           </button>
         </div>
@@ -114,101 +116,157 @@ export const PrimaryStandardCard: React.FC<Props> = ({
 
       {/* 2. Standard Identification: IS Number & Title */}
       <div>
-        <div className="flex flex-wrap items-baseline gap-2.5">
-          <h3 className="text-2xl font-black text-slate-900 tracking-tight font-mono">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <h3 className="text-3xl font-black text-slate-900 tracking-tight font-mono">
             {standard.is_number}
           </h3>
-          <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
+            <Calendar className="w-4 h-4 text-slate-400" />
             Edition: {standard.year}
           </span>
-          <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-medium border border-slate-200">
+          <span className="text-sm px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-md font-medium border border-slate-200">
             {standard.domain} Domain
           </span>
         </div>
 
-        <p className="text-base font-bold text-slate-800 mt-1 leading-snug">
+        <p className="text-xl font-bold text-slate-900 mt-2 leading-snug">
           {standard.title}
         </p>
+
+        {/* Active Replacement Standard Notice if Superseded */}
+        {isSuperseded && standard.superseded_by && (
+          <div
+            style={{
+              marginTop: 12,
+              marginBottom: 12,
+              padding: "14px 18px",
+              background: "#EFF6FF",
+              border: "1.5px solid #93C5FD",
+              borderRadius: 10,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#1E40AF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                ⚡ Current Active Replacement Standard
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "#DBEAFE", color: "#1D4ED8" }}>
+                MANDATORY FOR TENDERS
+              </span>
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#1E3A8A", fontFamily: "monospace" }}>
+              {standard.superseded_by}
+            </div>
+            <div style={{ fontSize: 14.5, color: "#1E40AF", marginTop: 4, lineHeight: 1.55 }}>
+              This cited standard is superseded. The active modern edition <strong>{standard.superseded_by}</strong> is the legally enforceable standard required under BIS Quality Control Orders (QCO) to prevent bid disqualification.
+            </div>
+          </div>
+        )}
+
+        {/* Live BIS Know Your Standards Agent Verification */}
+        <LiveVerificationBadge
+          isNumber={standard.is_number}
+          year={standard.year}
+          title={standard.title}
+        />
       </div>
 
-      {/* 3. PRIMARY EXPLANATION: JUDGE-FRIENDLY "WHY THIS STANDARD?" (UNDERSTAND IN 5 SECONDS) */}
-      <div className="bg-slate-50/80 rounded-lg border border-slate-200 p-4 space-y-2.5">
+      {/* 3. PRIMARY EXPLANATION: "WHY THIS STANDARD?" */}
+      <div className="bg-slate-50/80 rounded-xl border border-slate-200 p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+          <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             WHY THIS STANDARD?
           </h4>
-          <span className="text-[11px] font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-slate-500">
             Automated Specification Verification
           </span>
         </div>
 
-        {/* 5-Point Judge-Friendly Checklist */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-          <div className="flex items-start gap-2 bg-white p-2.5 rounded-md border border-slate-200">
-            <span className="text-emerald-600 font-bold text-sm leading-none">✓</span>
-            <div>
-              <span className="font-bold text-slate-800">Product match: </span>
-              <span className="text-slate-600">Identified equipment and function directly match standard scope.</span>
+        {/* 4 Reason Cards in 2x2 Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
+          <div className="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+            <div className="font-bold text-slate-900 flex items-start gap-1.5">
+              <span className="text-emerald-700 font-bold">✓</span>
+              <div>
+                <span>Product match: </span>
+                <span className="font-normal text-slate-700">
+                  Identified equipment and function directly match standard scope.
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 bg-white p-2.5 rounded-md border border-slate-200">
-            <span className="text-emerald-600 font-bold text-sm leading-none">✓</span>
-            <div>
-              <span className="font-bold text-slate-800">Technical specification match: </span>
-              <span className="text-slate-600">Operating parameters and electrical/mechanical ratings align with standard specifications.</span>
+          <div className="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+            <div className="font-bold text-slate-900 flex items-start gap-1.5">
+              <span className="text-emerald-700 font-bold">✓</span>
+              <div>
+                <span>Technical specification match: </span>
+                <span className="font-normal text-slate-700">
+                  Operating parameters and electrical/mechanical ratings align with standard specifications.
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 bg-white p-2.5 rounded-md border border-slate-200">
-            <span className="text-emerald-600 font-bold text-sm leading-none">✓</span>
-            <div>
-              <span className="font-bold text-slate-800">Application / domain match: </span>
-              <span className="text-slate-600">Procurement application context matches official BIS {standard.domain} domain scope.</span>
+          <div className="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+            <div className="font-bold text-slate-900 flex items-start gap-1.5">
+              <span className="text-emerald-700 font-bold">✓</span>
+              <div>
+                <span>Application / domain match: </span>
+                <span className="font-normal text-slate-700">
+                  Procurement application context matches official BIS {standard.domain} domain scope.
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 bg-white p-2.5 rounded-md border border-slate-200">
-            <span className="text-emerald-600 font-bold text-sm leading-none">✓</span>
-            <div>
-              <span className="font-bold text-slate-800">Requirement coverage: </span>
-              <span className="text-slate-600">Encompasses mandatory performance criteria, test protocols, and quality requirements.</span>
+          <div className="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+            <div className="font-bold text-slate-900 flex items-start gap-1.5">
+              <span className="text-emerald-700 font-bold">✓</span>
+              <div>
+                <span>Requirement coverage: </span>
+                <span className="font-normal text-slate-700">
+                  Encompasses mandatory performance criteria, test protocols, and quality requirements.
+                </span>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="flex items-start gap-2 bg-white p-2.5 rounded-md border border-slate-200 md:col-span-2">
-            <span className="text-emerald-600 font-bold text-sm leading-none">✓</span>
+        {/* 5th reason: Version Status Confirmation */}
+        <div className="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs text-sm">
+          <div className="font-bold text-slate-900 flex items-start gap-1.5">
+            <span className="text-emerald-700 font-bold">✓</span>
             <div>
-              <span className="font-bold text-slate-800">Current version status: </span>
-              <span className="text-slate-600">
+              <span>Current version status: </span>
+              <span className="font-normal text-slate-700">
                 {isCurrent
                   ? `Standard ${standard.is_number} is the current, active authoritative edition on record.`
-                  : `Standard edition ${standard.year} has been audited for supersession lifecycle.`}
+                  : isSuperseded
+                  ? `Note: ${standard.is_number} is superseded by ${standard.superseded_by}.`
+                  : `Edition verified in official repository.`}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Technical Parameter Matches (if present) */}
+        {/* Verified Technical Parameters Display */}
         {standard.technical_parameters && Object.keys(standard.technical_parameters).length > 0 && (
-          <div className="pt-2">
-            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Verified Technical Parameters:</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {Object.entries(standard.technical_parameters).slice(0, 6).map(([k, v], idx) => {
-                if (k === "application" || k === "keywords" || (typeof v === "object" && !Array.isArray(v))) return null;
-                const displayVal = Array.isArray(v) ? v.join(", ") : String(v);
+          <div className="pt-2.5 border-t border-slate-200/60">
+            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              Verified Technical Parameters:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(standard.technical_parameters).map(([key, val], idx) => {
+                const valStr = Array.isArray(val) ? val.join(", ") : String(val);
                 return (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-900 border border-emerald-200"
+                    className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200 font-medium"
                   >
-                    <span className="capitalize text-slate-600">{k.replace(/_/g, " ")}:</span>
-                    <span className="font-semibold text-slate-800">{displayVal}</span>
+                    <span>{key}:</span>
+                    <strong className="font-bold">{valStr}</strong>
                     <span className="text-emerald-600 font-bold">✓</span>
                   </span>
                 );
@@ -217,139 +275,6 @@ export const PrimaryStandardCard: React.FC<Props> = ({
           </div>
         )}
       </div>
-
-      {/* 4. Semantic vector insight notice (if paraphrased wording was detected) */}
-      {(semanticNote || standard.semantic_insight) && (
-        <div className="p-3 bg-indigo-50/80 rounded-lg border border-indigo-200 text-xs text-indigo-900 flex items-start gap-2.5">
-          <Sparkles className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-          <div>
-            <div className="font-bold text-[11px] uppercase tracking-wider text-indigo-800">
-              Semantic Vector Match (SentenceTransformer all-MiniLM-L6-v2)
-            </div>
-            <p className="mt-0.5 leading-relaxed text-indigo-950">
-              {semanticNote || standard.semantic_insight}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* 5. SECONDARY TECHNICAL DETAILS (COLLAPSIBLE FOR DEEP INSPECTION) */}
-      <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => setShowTechnicalScores(!showTechnicalScores)}
-          className="text-xs font-semibold text-slate-700 hover:text-blue-800 flex items-center gap-1.5 py-1 px-2.5 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200 transition"
-        >
-          <Info className="w-3.5 h-3.5 text-blue-600" />
-          <span>{showTechnicalScores ? "Hide Technical Scoring Details" : "Inspect Technical Scoring Details"}</span>
-          <span className="font-mono font-bold text-slate-900">({score}% AI Relevance)</span>
-          {showTechnicalScores ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowEvidence(!showEvidence)}
-            className="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1"
-          >
-            <FileText className="w-3.5 h-3.5 text-slate-500" />
-            <span>{showEvidence ? "Hide Scope Snippet" : "View Scope Snippet"}</span>
-          </button>
-
-          {hasAmendments && (
-            <button
-              type="button"
-              onClick={() => setShowAmendments(!showAmendments)}
-              className="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1"
-            >
-              <FileCheck className="w-3.5 h-3.5 text-blue-600" />
-              <span>{standard.amendments?.length} Amendments</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Expanded Secondary Technical Scoring */}
-      {showTechnicalScores && (
-        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-3 animate-in fade-in-50 duration-200">
-          <div>
-            <div className="flex items-center justify-between text-xs font-bold text-slate-800 mb-1">
-              <span className="uppercase tracking-wider text-[10px] text-slate-500">
-                Composite Relevance Score Breakdown
-              </span>
-              <span className="font-mono font-black text-slate-900">{score}%</span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-              <div
-                className={`h-2 rounded-full ${barColor}`}
-                style={{ width: `${Math.min(100, Math.max(5, score))}%` }}
-              />
-            </div>
-          </div>
-
-          {standard.scoring_breakdown && (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px] pt-1">
-              <div className="p-2 bg-white rounded border border-slate-200">
-                <span className="text-slate-400 block text-[10px]">Dense Semantic</span>
-                <strong className="font-mono font-bold text-slate-800">
-                  {(standard.scoring_breakdown.semantic_score * 100).toFixed(1)}%
-                </strong>
-              </div>
-              <div className="p-2 bg-white rounded border border-slate-200">
-                <span className="text-slate-400 block text-[10px]">BM25 Lexical</span>
-                <strong className="font-mono font-bold text-slate-800">
-                  {(standard.scoring_breakdown.lexical_score * 100).toFixed(1)}%
-                </strong>
-              </div>
-              <div className="p-2 bg-white rounded border border-slate-200">
-                <span className="text-slate-400 block text-[10px]">Req Coverage</span>
-                <strong className="font-mono font-bold text-slate-800">
-                  {(standard.scoring_breakdown.requirement_coverage * 100).toFixed(1)}%
-                </strong>
-              </div>
-              <div className="p-2 bg-white rounded border border-slate-200">
-                <span className="text-slate-400 block text-[10px]">Domain Score</span>
-                <strong className="font-mono font-bold text-slate-800">
-                  {(standard.scoring_breakdown.domain_score * 100).toFixed(1)}%
-                </strong>
-              </div>
-              <div className="p-2 bg-white rounded border border-slate-200">
-                <span className="text-slate-400 block text-[10px]">Version Weight</span>
-                <strong className="font-mono font-bold text-slate-800">
-                  {(standard.scoring_breakdown.version_score * 100).toFixed(1)}%
-                </strong>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Expanded Scope Snippet */}
-      {showEvidence && (
-        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-xs animate-in fade-in-50 duration-200">
-          <div className="font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
-            Official Standard Scope on Record:
-          </div>
-          <p className="text-slate-700 leading-relaxed font-mono bg-white p-2.5 rounded border border-slate-200 text-[11px]">
-            "{standard.scope}"
-          </p>
-        </div>
-      )}
-
-      {/* Expanded Amendments */}
-      {showAmendments && standard.amendments && (
-        <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-200 space-y-2 text-xs animate-in fade-in-50 duration-200">
-          <div className="font-bold text-blue-900">Official Amendments on Record:</div>
-          {standard.amendments.map((am, idx) => (
-            <div key={idx} className="bg-white p-2 rounded border border-blue-100">
-              <div className="font-semibold text-slate-900 font-mono text-[11px]">
-                {am.number} ({am.year})
-              </div>
-              <div className="text-slate-600 text-[11px] mt-0.5">{am.description}</div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

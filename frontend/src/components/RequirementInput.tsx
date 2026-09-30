@@ -9,10 +9,8 @@ import {
   ArrowRight,
   RefreshCw,
   Zap,
-  Layers,
-  AlertTriangle,
-  HelpCircle,
-  Play
+  Play,
+  X
 } from "lucide-react";
 import { ExampleScenario } from "@/types";
 
@@ -52,25 +50,30 @@ export const RequirementInput: React.FC<RequirementInputProps> = ({
     }
   };
 
-  // 5 Primary Judge Demonstration Scenarios
   const primaryDemos = examples.slice(0, 5);
   const additionalDemos = examples.slice(5);
 
   return (
-    <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-5 md:p-6 transition-all space-y-4">
-      {/* Action Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+    <div className="bg-[#1E293B] rounded-3xl shadow-md border border-slate-700/80 p-6 md:p-8 space-y-5 transition-all relative">
+      {/* Search Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
         <div>
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Search className="w-4 h-4 text-blue-700" />
-            Procurement Requirement Input
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-700/60 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              Hybrid Search & Audit Engine
+            </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
+            Search Indian Standards for Procurement Specifications
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Identify applicable standards by typing technical parameters, uploading tender NIT, or selecting a judge demo scenario.
+          <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">
+            Type technical requirements (voltage, rating, material, application) or upload tender NIT PDFs to identify applicable Indian Standards and audit superseded editions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        {/* Upload Tender PDF Button */}
+        <div className="shrink-0 self-start sm:self-auto">
           <input
             type="file"
             ref={fileInputRef}
@@ -82,82 +85,87 @@ export const RequirementInput: React.FC<RequirementInputProps> = ({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-lg transition"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl shadow-xs transition"
           >
-            <UploadCloud className="w-3.5 h-3.5 text-slate-600" />
+            <UploadCloud className="w-4 h-4 text-blue-400" />
             <span>{selectedFileName ? `PDF: ${selectedFileName}` : "Upload Tender PDF"}</span>
           </button>
-
-          {selectedFileName && (
-            <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 flex items-center gap-1 font-medium">
-              <FileText className="w-3.5 h-3.5" />
-              Document Parsed
-            </span>
-          )}
         </div>
       </div>
 
-      {/* Main Textarea */}
-      <div className="relative">
-        <textarea
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Enter technical specification text (e.g., 15 kW three-phase squirrel-cage induction motor for industrial operation, 415 V, 50 Hz)..."
-          rows={3}
-          className="w-full text-xs sm:text-sm text-slate-900 bg-slate-50/70 rounded-lg border border-slate-300 p-3.5 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-700 focus:border-transparent transition-all placeholder:text-slate-400 font-sans"
-        />
+      {/* Search Box Input Area */}
+      <div className="relative z-10 space-y-3">
+        <div className="relative group">
+          <div className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-400 transition">
+            <Search className="w-5 h-5" />
+          </div>
 
-        {query && (
+          <textarea
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Enter technical requirement specification (e.g., '15 kW three-phase induction motor, 415 V, 50 Hz for industrial operation')..."
+            rows={3}
+            className="w-full text-xs sm:text-sm font-medium text-white bg-[#0F172A] rounded-2xl border-2 border-slate-700 pl-12 pr-12 pt-3.5 pb-3.5 focus:outline-none focus:border-blue-500 shadow-inner transition-all placeholder:text-slate-500 font-sans leading-relaxed"
+          />
+
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Submit Action Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+          <div className="text-xs text-slate-400 font-medium flex items-center gap-2">
+            {selectedFileName ? (
+              <span className="text-xs text-emerald-300 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-800 flex items-center gap-1.5 font-bold">
+                <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                Tender PDF Uploaded: {selectedFileName}
+              </span>
+            ) : (
+              <span>Indexes 113 authentic Indian Standards across Electrical, Civil, PPE & Solar domains.</span>
+            )}
+          </div>
+
           <button
             type="button"
-            onClick={() => setQuery("")}
-            className="absolute top-2.5 right-2.5 text-xs text-slate-400 hover:text-slate-700 px-2 py-0.5 rounded-md hover:bg-slate-200 transition"
+            onClick={() => onAnalyze()}
+            disabled={isLoading || (!query.trim() && !selectedFileName)}
+            className="inline-flex items-center justify-center gap-2 px-7 py-3 text-xs sm:text-sm font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] rounded-xl shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition transform"
           >
-            Clear
+            {isLoading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                <span>Searching Standards...</span>
+              </>
+            ) : (
+              <>
+                <span>Search Standards</span>
+                <ArrowRight className="w-4 h-4 text-amber-300" />
+              </>
+            )}
           </button>
-        )}
-      </div>
-
-      {/* Submit Button Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="text-xs text-slate-500 flex items-center gap-1.5">
-          <span>Supported inputs: Engineering ratings, commercial tender clauses, or IS citations.</span>
         </div>
-
-        <button
-          type="button"
-          onClick={() => onAnalyze()}
-          disabled={isLoading || (!query.trim() && !selectedFileName)}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 active:bg-blue-900 rounded-lg shadow-xs disabled:opacity-50 disabled:cursor-not-allowed transition"
-        >
-          {isLoading ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin text-white" />
-              <span>Analyzing Standards...</span>
-            </>
-          ) : (
-            <>
-              <span>Identify Applicable Standards</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
       </div>
 
-      {/* JUDGE DEMO FLOW PANEL: 5 One-Click Live Scenarios */}
-      <div className="pt-3 border-t border-slate-100">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            One-Click Judge Demonstration Scenarios:
+      {/* Preset Scenarios Grid */}
+      <div className="pt-3 border-t border-slate-700/80 relative z-10 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-amber-400" />
+            Quick Demo Scenarios (One-Click Search):
           </span>
 
-          {/* Additional scenarios dropdown */}
           {additionalDemos.length > 0 && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">More:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-semibold">More Domains:</span>
               <select
-                className="text-[11px] bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-md px-2 py-1 text-slate-700 cursor-pointer focus:outline-hidden"
+                className="text-xs bg-[#0F172A] hover:bg-slate-800 border border-slate-700 rounded-xl px-3 py-1 text-slate-200 font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onChange={(e) => {
                   const ex = examples.find((x) => x.id === e.target.value);
                   if (ex) handleSelectExample(ex, true);
@@ -165,7 +173,7 @@ export const RequirementInput: React.FC<RequirementInputProps> = ({
                 defaultValue=""
               >
                 <option value="" disabled>
-                  Additional Domains (Transformers, Cement, Rebar, PPE, Solar)...
+                  Select Domain (Transformers, Rebar, PPE, Solar...)...
                 </option>
                 {additionalDemos.map((ex) => (
                   <option key={ex.id} value={ex.id}>
@@ -177,16 +185,16 @@ export const RequirementInput: React.FC<RequirementInputProps> = ({
           )}
         </div>
 
-        {/* 5 Prominent Demonstration Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+        {/* 5 Preset Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
           {primaryDemos.map((ex, idx) => {
             const isMatch = query.trim() === ex.query.trim();
             const badgeLabel = [
-              "1. Technical Match",
-              "2. Semantic Search",
+              "1. Motor Specs",
+              "2. PPC Cement",
               "3. Multi-Item Tender",
-              "4. Superseded Audit",
-              "5. Unknown Rejection"
+              "4. Version Audit",
+              "5. Non-Catalog Item"
             ][idx] || ex.category;
 
             return (
@@ -194,28 +202,32 @@ export const RequirementInput: React.FC<RequirementInputProps> = ({
                 key={ex.id}
                 type="button"
                 onClick={() => handleSelectExample(ex, true)}
-                className={`p-2.5 rounded-lg border text-left transition flex flex-col justify-between ${
+                className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between group ${
                   isMatch
-                    ? "bg-blue-50/80 border-blue-600 text-blue-950 shadow-2xs"
-                    : "bg-slate-50 hover:bg-slate-100/90 border-slate-200 text-slate-800"
+                    ? "bg-blue-600 text-white border-blue-500 shadow-md"
+                    : "bg-[#0F172A] hover:bg-slate-800 border-slate-700/80 text-slate-200 hover:border-slate-600"
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700">
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span
+                      className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                        isMatch ? "bg-white/20 text-white" : "bg-blue-950 text-blue-300 border border-blue-800/50"
+                      }`}
+                    >
                       {badgeLabel}
                     </span>
-                    <Play className="w-3 h-3 text-slate-400 group-hover:text-blue-700 shrink-0" />
+                    <Play className={`w-3 h-3 ${isMatch ? "text-amber-300" : "text-slate-400 group-hover:text-blue-400"}`} />
                   </div>
-                  <div className="text-xs font-bold mt-1 line-clamp-1 text-slate-900">
+                  <div className={`text-xs font-bold line-clamp-1 ${isMatch ? "text-white" : "text-slate-100"}`}>
                     {ex.label.split(": ")[1] || ex.label}
                   </div>
-                  <div className="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">
+                  <div className={`text-[11px] line-clamp-2 mt-0.5 leading-snug ${isMatch ? "text-blue-100" : "text-slate-400"}`}>
                     "{ex.query}"
                   </div>
                 </div>
-                <div className="mt-2 text-[10px] text-emerald-700 font-medium">
-                  → Click to Run
+                <div className={`mt-2 text-[10px] font-bold ${isMatch ? "text-amber-300" : "text-blue-400"}`}>
+                  → Click to Search
                 </div>
               </button>
             );

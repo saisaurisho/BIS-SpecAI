@@ -1,45 +1,53 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #EDE8FC;
+  color: #1A0E40;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-/* React Flow Custom Node & Canvas styling */
-.react-flow__renderer {
-  border-radius: 0.75rem;
+* { box-sizing: border-box; }
+
+h1, h2, h3, h4, h5, h6 {
+  color: #1A0E40;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
 }
 
-.react-flow__handle {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #3b82f6;
+h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-/* Smooth custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+h2 {
+  font-size: 1.5rem;
+  font-weight: 750;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
+h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+h4 {
+  font-size: 1.1rem;
+  font-weight: 650;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #E4DEFA; }
+::-webkit-scrollbar-thumb { background: #C0AEED; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #A08DD8; }
+
+.react-flow__handle { width: 8px; height: 8px; border-radius: 50%; background: #5B21B6; }

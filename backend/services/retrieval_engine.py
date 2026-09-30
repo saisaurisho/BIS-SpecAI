@@ -236,6 +236,14 @@ class HybridRetrievalEngine:
                 reasons.append(f"Equipment class match: {req.product}")
                 evidence.append(EvidenceItem(criterion="Equipment Class", detail=f"Matched standard title & specification scope"))
 
+            # Critical vocabulary mismatch penalty:
+            # e.g. User asked for optical/fiber cables, but standard is copper/PVC electrical power cable
+            if any(w in query_lower for w in ["optical", "fiber", "fibre"]) and not any(w in std_text for w in ["optical", "fiber", "fibre"]):
+                sem_score *= 0.35
+                lex_score *= 0.2
+                coverage_ratio = 0.05
+                domain_match = 0.1
+
             # Status weighting (1.0 for active, 0.4 for superseded)
             status = std.get("status", "current")
             is_explicitly_mentioned = std["is_number"].lower() in query_lower or std["id"].lower() in query_lower
@@ -342,14 +350,22 @@ class HybridRetrievalEngine:
             )
             results.append(meta)
 
-        # If a candidate is superseded, ensure its active replacement is promoted to the candidate pool
+        # If a candidate is superseded, ensure its active replacement is promoted to Rank 1 (#1 position)
         final_results = results[:top_k]
         existing_numbers = {c.is_number for c in final_results}
         
         for cand in list(final_results):
             if cand.status == "superseded" and cand.superseded_by:
                 rep_num = cand.superseded_by
-                if rep_num not in existing_numbers:
+                # Check if the replacement standard was already retrieved in the results
+                rep_existing = next((c for c in results if c.is_number == rep_num), None)
+                if rep_existing:
+                    if rep_existing in final_results:
+                        final_results.remove(rep_existing)
+                    rep_existing.ai_relevance_score = max(rep_existing.ai_relevance_score or 85.0, (cand.ai_relevance_score or 80.0) + 3.0)
+                    final_results.insert(0, rep_existing)
+                    existing_numbers.add(rep_num)
+                else:
                     rep_std = self.get_standard_by_number(rep_num)
                     if rep_std:
                         amends = [

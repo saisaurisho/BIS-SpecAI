@@ -84,18 +84,18 @@ export const RelatedStandardsSection: React.FC<Props> = ({ related, onSelectStan
     <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-5 md:p-6 transition-all">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
         <div>
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             <Layers className="w-5 h-5 text-blue-700" />
             Related-Standard Intelligence & Hierarchy
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-sm text-slate-500 mt-0.5">
             Automated relationship graph traversal categorizing normative, testing, safety, and superseded standards.
           </p>
         </div>
       </div>
 
       {/* Tabs Navigation Header */}
-      <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200">
+      <div className="mt-4 flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.id === activeTabId;
@@ -104,16 +104,16 @@ export const RelatedStandardsSection: React.FC<Props> = ({ related, onSelectStan
               key={tab.id}
               type="button"
               onClick={() => setActiveTabId(tab.id)}
-              className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap border ${
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition whitespace-nowrap border ${
                 isActive
                   ? "bg-blue-700 text-white border-blue-700 shadow-xs"
                   : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : ""}`} />
+              <Icon className={`w-4 h-4 ${isActive ? "text-white" : ""}`} />
               <span>{tab.label}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                   isActive ? "bg-blue-900/60 text-blue-100" : "bg-slate-200 text-slate-700"
                 }`}
               >
@@ -125,7 +125,7 @@ export const RelatedStandardsSection: React.FC<Props> = ({ related, onSelectStan
       </div>
 
       {/* Tab Context Banner */}
-      <div className="mt-3.5 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-2">
+      <div className="mt-3.5 p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 flex items-center gap-2.5">
         <Info className="w-4 h-4 text-blue-600 shrink-0" />
         <span>{activeTab.description}</span>
       </div>
@@ -134,7 +134,7 @@ export const RelatedStandardsSection: React.FC<Props> = ({ related, onSelectStan
       <div className="mt-4">
         {activeTab.items.length === 0 ? (
           <div className="py-8 text-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-sm text-slate-400 font-medium">
               No standards mapped under this category for the primary specification.
             </p>
           </div>
@@ -144,20 +144,20 @@ export const RelatedStandardsSection: React.FC<Props> = ({ related, onSelectStan
               <div
                 key={idx}
                 onClick={() => onSelectStandard(std)}
-                className="bg-white hover:bg-blue-50/40 p-4 rounded-lg border border-slate-200 hover:border-blue-300 shadow-2xs transition cursor-pointer group"
+                className="bg-white hover:bg-blue-50/40 p-4 rounded-xl border border-slate-200 hover:border-blue-300 shadow-2xs transition cursor-pointer group"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="font-mono text-sm font-extrabold text-blue-900 group-hover:text-blue-700">
+                    <span className="font-mono text-base font-extrabold text-blue-900 group-hover:text-blue-700">
                       {std.is_number}
                     </span>
-                    <span className="ml-2 text-xs text-slate-400 font-medium">
+                    <span className="ml-2 text-sm text-slate-500 font-medium">
                       ({std.year})
                     </span>
                   </div>
 
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
                       std.status === "current"
                         ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                         : "bg-red-50 text-red-800 border-red-200"
@@ -167,20 +167,20 @@ export const RelatedStandardsSection: React.FC<Props> = ({ related, onSelectStan
                   </span>
                 </div>
 
-                <div className="text-xs font-semibold text-slate-800 mt-1 line-clamp-2">
+                <div className="text-sm font-semibold text-slate-900 mt-1.5 line-clamp-2 leading-snug">
                   {std.title}
                 </div>
 
-                <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-600 mt-1.5 line-clamp-2 leading-relaxed">
                   {std.scope}
                 </p>
 
-                <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                  <span className="font-medium text-slate-600">
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <span className="font-medium text-slate-700">
                     Domain: {std.domain}
                   </span>
                   <span className="text-blue-600 group-hover:underline flex items-center gap-1 font-semibold">
-                    View Metadata <ExternalLink className="w-3 h-3" />
+                    View Metadata <ExternalLink className="w-3.5 h-3.5" />
                   </span>
                 </div>
               </div>

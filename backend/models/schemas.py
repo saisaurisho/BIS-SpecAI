@@ -157,3 +157,50 @@ class AnalysisResponse(BaseModel):
     requirement_groups: List[RequirementGroupResult] = Field(default_factory=list)
     tender_clause: Optional[str] = None
 
+# =========================================================================
+# BIS Know Your Standards Live Web Agent Schemas
+# =========================================================================
+
+class StandardVerificationRequest(BaseModel):
+    is_number: str = Field(..., description="Indian Standard number (e.g. 'IS 12615', 'IS 325', 'IS 456')")
+    year: Optional[int] = Field(None, description="Year of referenced standard, if known")
+    title: Optional[str] = Field(None, description="Title of standard, if known")
+
+class StandardVerificationResult(BaseModel):
+    is_number: str
+    status: str = Field(..., description="ACTIVE_CURRENT, SUPERSEDED, WITHDRAWN, or UNDER_REVISION")
+    status_label: str
+    latest_edition: str
+    published_year: Optional[str] = None
+    reaffirmed_year: Optional[str] = None
+    superseded_by: Optional[str] = None
+    verified_via: str = "BIS Know Your Standards Portal (services.bis.gov.in)"
+    portal_url: str
+    is_valid_for_procurement: bool
+    revisions_history: List[Dict[str, Any]] = Field(default_factory=list)
+    amendments_count: int = 0
+    verification_timestamp: str
+    agent_summary: str
+    linked_normative_standards: List[str] = Field(default_factory=list)
+
+class DiscoverStandardsRequest(BaseModel):
+    query: str = Field(..., description="Keywords or procurement need to search live on BIS portal")
+    limit: int = Field(10, description="Max new standards to retrieve")
+
+class DiscoveredStandard(BaseModel):
+    is_number: str
+    title: str
+    year: Optional[str] = None
+    status: str = "Active"
+    portal_url: str
+    is_in_local_catalog: bool = False
+    relevance_note: Optional[str] = None
+
+class DiscoverStandardsResponse(BaseModel):
+    query: str
+    discovered_standards: List[DiscoveredStandard] = Field(default_factory=list)
+    total_found_on_portal: int
+    agent_analysis: str
+    portal_source: str = "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/"
+    execution_time_ms: float
+
